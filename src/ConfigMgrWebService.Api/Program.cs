@@ -168,10 +168,47 @@ builder.Services.AddCors(options =>
 // ========================================
 // DEPENDENCY INJECTION
 // ========================================
-// TODO: Register services here
-// builder.Services.AddScoped<IComputerService, ComputerService>();
-// builder.Services.AddScoped<IGraphUtility, GraphUtility>();
-// etc.
+
+// Register Infrastructure Services (Utilities)
+builder.Services.AddScoped(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<ConfigMgrWebService.Infrastructure.ConfigMgr.ConfigMgrUtility>>();
+    var settings = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AppSettings>>().Value;
+
+    return new ConfigMgrWebService.Infrastructure.ConfigMgr.ConfigMgrUtility(
+        settings.ConfigMgr.SiteServer,
+        string.Empty, // Use current credentials
+        string.Empty,
+        logger);
+});
+
+builder.Services.AddScoped(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<ConfigMgrWebService.Infrastructure.Graph.GraphUtil>>();
+    var settings = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AppSettings>>().Value;
+
+    return new ConfigMgrWebService.Infrastructure.Graph.GraphUtil(
+        "ConfigMgr Web Service",
+        settings.GraphApi.AppId,
+        settings.GraphApi.TenantId,
+        "https://graph.microsoft.com/beta/",
+        settings.GraphApi.SecretString,
+        logger);
+});
+
+// Register Business Logic Services
+builder.Services.AddScoped<ConfigMgrWebService.Core.Interfaces.IComputerService,
+    ConfigMgrWebService.Core.Services.ComputerService>();
+builder.Services.AddScoped<ConfigMgrWebService.Core.Interfaces.ICollectionService,
+    ConfigMgrWebService.Core.Services.CollectionService>();
+builder.Services.AddScoped<ConfigMgrWebService.Core.Interfaces.IUserService,
+    ConfigMgrWebService.Core.Services.UserService>();
+builder.Services.AddScoped<ConfigMgrWebService.Core.Interfaces.IIntuneService,
+    ConfigMgrWebService.Core.Services.IntuneService>();
+builder.Services.AddScoped<ConfigMgrWebService.Core.Interfaces.IEntraService,
+    ConfigMgrWebService.Core.Services.EntraService>();
+builder.Services.AddScoped<ConfigMgrWebService.Core.Interfaces.IUsmtService,
+    ConfigMgrWebService.Core.Services.UsmtService>();
 
 var app = builder.Build();
 
