@@ -1,3 +1,4 @@
+using ConfigMgrWebService.Core.Interfaces;
 using ConfigMgrWebService.Shared.Constants;
 using ConfigMgrWebService.Shared.DTOs;
 using ConfigMgrWebService.Shared.Responses;
@@ -16,12 +17,14 @@ namespace ConfigMgrWebService.Api.Controllers;
 public class ComputerController : ControllerBase
 {
     private readonly ILogger<ComputerController> _logger;
-    // TODO: Inject services
-    // private readonly IComputerService _computerService;
+    private readonly IComputerService _computerService;
 
-    public ComputerController(ILogger<ComputerController> logger)
+    public ComputerController(
+        ILogger<ComputerController> logger,
+        IComputerService computerService)
     {
-        _logger = logger;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _computerService = computerService ?? throw new ArgumentNullException(nameof(computerService));
     }
 
     /// <summary>
@@ -48,11 +51,12 @@ public class ComputerController : ControllerBase
                 "Adding computer {ComputerName} with BIOS GUID {BiosGuid}. CorrelationId: {CorrelationId}",
                 request.ComputerName, request.BiosGuid, correlationId);
 
-            // TODO: Implement actual logic
-            // var resourceId = await _computerService.AddComputerByBiosGuidAsync(request.ComputerName, request.BiosGuid);
+            var resourceId = await _computerService.AddComputerByBiosGuidAsync(
+                request.ComputerName,
+                request.BiosGuid);
 
-            // For now, return success
-            var response = ApiResponse.SuccessResponse(ApiConstants.ResponseMessages.ComputerAdded);
+            var response = ApiResponse.SuccessResponse(
+                ApiConstants.ResponseMessages.ComputerAdded);
             response.CorrelationId = correlationId;
 
             return CreatedAtAction(
@@ -104,8 +108,7 @@ public class ComputerController : ControllerBase
                 "Deleting computer {ComputerName}. CorrelationId: {CorrelationId}",
                 computerName, correlationId);
 
-            // TODO: Implement actual logic
-            // await _computerService.DeleteComputerAsync(computerName);
+            await _computerService.DeleteComputerAsync(computerName);
 
             var response = ApiResponse.SuccessResponse(ApiConstants.ResponseMessages.ComputerDeleted);
             response.CorrelationId = correlationId;
@@ -154,10 +157,7 @@ public class ComputerController : ControllerBase
                 "Checking if computer exists: {ComputerName}. CorrelationId: {CorrelationId}",
                 computerName, correlationId);
 
-            // TODO: Implement actual logic
-            // var exists = await _computerService.CheckComputerExistsAsync(computerName);
-
-            var exists = false; // Placeholder
+            var exists = await _computerService.CheckComputerExistsAsync(computerName);
 
             var data = new ComputerExistsResponse
             {
@@ -207,8 +207,7 @@ public class ComputerController : ControllerBase
                 "Clearing PXE flag for computer {ComputerName}. CorrelationId: {CorrelationId}",
                 computerName, correlationId);
 
-            // TODO: Implement actual logic
-            // await _computerService.ClearPxeFlagAsync(computerName);
+            await _computerService.ClearPxeFlagAsync(computerName);
 
             var response = ApiResponse.SuccessResponse(ApiConstants.ResponseMessages.PxeFlagCleared);
             response.CorrelationId = correlationId;
